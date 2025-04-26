@@ -46,6 +46,7 @@ By analyzing these dimensions through fully interactive visualizations, the repo
 Why it matters:
 Despite global progress, significant health and socio-economic gaps persist across countries. Understanding vulnerability at the intersection of economic, health, and social factors is critical for designing effective, targeted interventions to protect the most at-risk populations.
 
+
 ```{python}
 #| label: setup
 import pandas as pd
@@ -116,11 +117,10 @@ fig1.update_layout(
     width=None,
     height=None,
     hovermode="closest",  # Better touch interactions on mobile
-    showlegend=False  # << LEGEND IS NOW REMOVED
+    showlegend=False  # << Completely hide the legend
 )
 
 fig1.show()
-
 
 ```
 
@@ -245,6 +245,7 @@ fig4.show()
 
 # 5. Animated Global DTP Coverage Map
 
+
 ```{python}
 
 #| label: viz5-map
@@ -255,15 +256,15 @@ fig5 = px.choropleth(
     color="DTP",
     animation_frame="Year",
     range_color=[0, 100],
-    color_continuous_scale="Viridis",
-    title="Global DTP Coverage (2010–2024)"
+    color_continuous_scale="Viridis"
 )
 
 fig5.update_layout(
+    title="Global DTP Coverage (2010–2024)<br><br>",  # add two line breaks
     autosize=True,
     width=None,
     height=None,
-    hovermode="closest",  # Best for touch on mobile
+    hovermode="closest",
     geo=dict(
         projection_type="natural earth",
         showframe=False,
@@ -271,7 +272,7 @@ fig5.update_layout(
         landcolor="lightgray",
         oceancolor="lightblue"
     ),
-    margin=dict(t=50, l=30, r=30, b=30)  # Tighter margins for mobile
+    margin=dict(t=50, l=30, r=30, b=30)
 )
 
 fig5.show()
