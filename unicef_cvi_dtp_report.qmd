@@ -1,0 +1,516 @@
+---
+title: "UNICEF Data Story: Global Child Vulnerability & DTP Vaccination"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    toc-depth: 2
+    code-fold: true
+    code-tools: true
+    theme: cosmo
+    backgroundcolor: "#f9f9f9"  # Soft light grey
+    css: styles.css
+editor: visual
+execute:
+  echo: true
+  warning: false
+  message: false
+  error: true
+---
+
+::: {align="center"}
+# Spring 2025 BAA1030 Data Analytics & Story Telling (20074)
+
+### **Student Name:** Isha Tanwar
+
+### **Student ID:** 48614
+
+### **Programme:** MSc in Management (Strategy)
+
+### *Thanks to Professor Dr. Damien Dupre, Dublin City University, for his unwavering guidance and support.*
+:::
+
+------------------------------------------------------------------------
+
+<!-- Setup: Load Data & Preprocess -->
+
+```{python}
+import pandas as pd
+from plotnine import *
+from sklearn.preprocessing import MinMaxScaler
+import plotly.graph_objects as go
+
+# Load dataset
+merged_df = pd.read_csv("merged_final.csv")
+
+# Derived column
+merged_df["OrphanRate_per_1000"] = (
+    merged_df["OrphanCount"] / merged_df["Population, total"]
+) * 1000
+
+# Rename for convenience
+merged_df = merged_df.rename(columns={
+    "GDP per capita (constant 2015 US$)": "GDP",
+    "Life expectancy at birth, total (years)": "LifeExpectancy"
+})
+
+```
+
+## Executive Summary
+
+**This report explores global disparities in child vulnerability using data from UNICEF and the World Bank.**\
+It combines key indicators — GDP, immunization rates, orphan counts, and life expectancy — into a composite index.\
+Visual analytics highlight countries most at risk, helping align interventions with **SDG 3 (Health)** and **SDG 10 (Inequality)**.
+
+## Introduction
+
+*This report* provides a **data-driven exploration** of global child vulnerability, focusing on **DTP (Diphtheria, Tetanus, and Pertussis)** vaccination coverage. Using datasets from **UNICEF** and the **World Bank**, this analysis combines economic, health, and demographic indicators to expose **inequities in child well-being**.
+
+------------------------------------------------------------------------
+
+## Scatter Plot: GDP vs DTP Vaccination Coverage
+
+```{python}
+
+scatter_df = merged_df[["Country", "DTP", "GDP"]].dropna()
+
+scatter_plot = (
+    ggplot(scatter_df, aes(x="GDP", y="DTP")) +
+    geom_point(color="green", alpha=0.7) +
+    geom_smooth(method='lm', color="darkblue") +
+    labs(
+        title="GDP per Capita vs DTP Vaccination Coverage",
+        x="GDP per Capita (USD)",
+        y="DTP Coverage (%)"
+    ) +
+    theme_minimal()
+)
+
+scatter_plot.draw()
+
+```
+
+<p style="font-weight: bold; font-size: 16px;">
+
+Insight: Countries with higher GDP per capita tend to achieve better DTP vaccination rates. This suggests economic capacity plays a pivotal role in health system performance and immunization reach.
+
+</p>
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## Bar Chart: Top 10 Countries by Orphanhood
+
+```{python}
+
+# Get the most recent year in your dataset
+latest_year = merged_df["Year"].max()
+
+# Filter for top 10 countries by OrphanCount
+bar_data = (
+    merged_df[merged_df["Year"] == latest_year]
+    .dropna(subset=["OrphanCount"])
+    .sort_values(by="OrphanCount", ascending=False)
+    .head(10)
+)
+
+# Format OrphanCount as readable labels like "13.6M"
+def format_millions(val):
+    return f"{val / 1_000_000:.1f}M"
+
+bar_data["Label"] = bar_data["OrphanCount"].apply(format_millions)
+
+# Plot with nice labels
+bar_chart = (
+    ggplot(bar_data, aes(x="reorder(Country, OrphanCount)", y="OrphanCount")) +
+    geom_bar(stat="identity", fill="#f15b42", width=0.7) +
+    geom_text(
+        aes(label="Label"),
+        format_string="{:}",
+        nudge_y=2e5,  # small offset to move label slightly right
+        size=11,
+        color="black",
+        ha="left"
+    ) +
+    coord_flip() +
+    labs(
+        title=f"Top 10 Countries by Orphanhood ({latest_year})",
+        x="Country",
+        y="Number of Orphaned Children"
+    ) +
+    theme_minimal() +
+    theme(
+        figure_size=(14, 8),
+        axis_text=element_text(size=14),
+        plot_title=element_text(size=18, weight="bold"),
+        axis_title=element_text(size=15)
+    )
+)
+
+bar_chart.draw()
+
+
+```
+
+<p style="font-weight: bold; font-size: 16px;">
+
+Insight: Countries like **Nigeria**, **DR Congo**, and **Pakistan** top the orphanhood chart, reflecting the heavy burden of conflict, disease, and poverty.\
+This visualization underscores how systemic crises directly affect children's lives — a call to **accelerate child protection** and **family-strengthening programs** in high-risk regions.
+
+</p>
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## Time Series: Orphanhood Trends (Multi-Country Normalized)
+
+```{python}
+
+focus_countries = ["Ethiopia", "Nigeria", "Yemen", "Somalia", "Guinea", "Ukraine"]
+ts_data = merged_df[
+    merged_df["Country"].isin(focus_countries) &
+    merged_df["OrphanRate_per_1000"].notna()
+].sort_values(["Country", "Year"])
+
+orphan_trend_plot = (
+    ggplot(ts_data, aes(x="Year", y="OrphanRate_per_1000", color="Country")) +
+    geom_line(size=1.2) +
+    geom_point(size=2, alpha=0.8) +
+    labs(
+        title="Orphanhood Rate per 1000 Children",
+        subtitle="Normalized by population",
+        x="Year",
+        y="Orphan Rate (per 1000)"
+    ) +
+    theme_minimal()
+)
+
+orphan_trend_plot.draw()
+
+```
+
+<p style="font-weight: bold; font-size: 16px;">
+
+Insight: While absolute orphan counts vary, the normalized trends show that countries like Somalia and Yemen consistently exhibit high orphanhood rates per 1000 children. This reveals not just scale, but intensity of vulnerability, adjusted for population size.
+
+</p>
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## Faceted View: Orphanhood Trends by Country
+
+```{python}
+
+facet_chart = (
+    ggplot(ts_data, aes(x="Year", y="OrphanRate_per_1000")) +
+    geom_line(color="#c778a2", size=1.2) +
+    geom_point(color="#af4e88", size=2) +
+    facet_wrap("~Country") +
+    labs(
+        title="Orphanhood Trends by Country (Faceted)",
+        x="Year",
+        y="Orphan Rate per 1000"
+    ) +
+    theme_minimal()
+)
+
+facet_chart.draw()
+
+```
+
+<p style="font-weight: bold; font-size: 16px;">
+
+Insight: Country-specific plots make it easier to spot individual trends—e.g., a steady rise in Ukraine vs. fluctuations in Nigeria. This enables policymakers to tailor child protection strategies by context.
+
+</p>
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+<!-- Compute Child Vulnerability Index -->
+
+```{python}
+
+indicators = merged_df[[
+    "DTP", "GDP", "LifeExpectancy", "OrphanRate_per_1000"
+]].dropna()
+
+# Invert values so high = more vulnerable
+inverted = indicators.copy()
+inverted["DTP"] = 100 - inverted["DTP"]
+inverted["GDP"] = inverted["GDP"].max() - inverted["GDP"]
+inverted["LifeExpectancy"] = inverted["LifeExpectancy"].max() - inverted["LifeExpectancy"]
+
+# Normalize and compute CVI
+scaler = MinMaxScaler(feature_range=(0, 100))
+normalized = scaler.fit_transform(inverted)
+merged_df.loc[indicators.index, "Child Vulnerability Index"] = normalized.mean(axis=1)
+
+# Reattach CVI to dataframe
+merged_df.loc[indicators.index, "Child Vulnerability Index"] = normalized.mean(axis=1)
+
+# Create CVI data subset for plotting
+cvi_data = merged_df.dropna(subset=["Child Vulnerability Index"]).copy()
+cvi_data = cvi_data.rename(columns={"Child Vulnerability Index": "CVI"})
+
+```
+
+## Weighted Index: Bottom 10 by Vulnerability
+
+```{python}
+
+from plotnine import (
+    ggplot, aes, geom_bar, geom_text, geom_hline, coord_flip, labs,
+    theme_minimal, theme, element_text
+)
+
+# Step 1: Create CVI if not done yet
+if "Child Vulnerability Index" not in merged_df.columns:
+    indicators = merged_df[[
+        "DTP", "GDP", "LifeExpectancy", "OrphanRate_per_1000"
+    ]].dropna()
+    inverted = indicators.copy()
+    inverted["DTP"] = 100 - inverted["DTP"]
+    inverted["GDP"] = inverted["GDP"].max() - inverted["GDP"]
+    inverted["LifeExpectancy"] = inverted["LifeExpectancy"].max() - inverted["LifeExpectancy"]
+    scaler = MinMaxScaler(feature_range=(0, 100))
+    normalized = scaler.fit_transform(inverted)
+    merged_df.loc[indicators.index, "Child Vulnerability Index"] = normalized.mean(axis=1)
+
+# Step 2: Filter properly
+cvi_data = merged_df.dropna(subset=["Child Vulnerability Index"]).copy()
+cvi_data = cvi_data.rename(columns={"Child Vulnerability Index": "CVI"})
+
+# ⚠️ Avoid duplicates — get only latest year if your dataset is multi-year
+if "Year" in cvi_data.columns:
+    latest_year = cvi_data["Year"].max()
+    cvi_data = cvi_data[cvi_data["Year"] == latest_year]
+
+# Step 3: Bottom 10 CVI scores
+bottom_10 = cvi_data.sort_values("CVI", ascending=False).tail(10)
+avg_cvi = round(cvi_data["CVI"].mean(), 2)
+
+# Step 4: Beautiful CVI bar chart
+bar_index = (
+    ggplot(bottom_10, aes(x="reorder(Country, CVI)", y="CVI")) +
+    geom_bar(stat="identity", fill="#d88fb3") +
+    geom_text(aes(label="round(CVI, 1)"), format_string="{:.1f}", nudge_y=1, size=10, color="black") +
+    geom_hline(yintercept=avg_cvi, linetype="dashed", color="gray") +
+    coord_flip() +
+    labs(
+        title="Bottom 10 Countries by Child Vulnerability Index",
+        x="Country",
+        y="CVI (0–100)"
+    ) +
+    theme_minimal() +
+    theme(
+        figure_size=(12, 6),
+        axis_text=element_text(size=11),
+        plot_title=element_text(size=14, weight='bold')
+    )
+)
+
+bar_index.draw()
+
+```
+
+<p style="font-weight: bold; font-size: 16px;">
+
+Insight: The CVI shows which countries face the gravest challenges in child well-being. Factors like low GDP, low immunization, and high orphan rates converge to elevate vulnerability. The bottom 10 countries—many of them in Africa—need holistic interventions across health, economic, and social sectors.
+
+</p>
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## Simulated DTP Coverage (based on GDP)
+
+```{python}
+
+import pandas as pd
+import altair as alt
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import MinMaxScaler
+
+# 1. Load Data
+df = pd.read_csv("merged_final.csv")
+
+# 2. Rename Columns Properly
+df = df.rename(columns={
+    "GDP per capita (constant 2015 US$)": "GDP",
+    "Life expectancy at birth, total (years)": "LifeExpectancy"
+})
+
+# 3. Filter for years 2014-2024
+df = df[df["Year"].between(2014, 2024)]
+
+# 4. Create OrphanRate
+if "OrphanRate_per_1000" not in df.columns:
+    df["OrphanRate_per_1000"] = (df["OrphanCount"] / df["Population, total"]) * 1000
+
+# 5. Compute CVI
+cvi_fields = ["DTP", "GDP", "LifeExpectancy", "OrphanRate_per_1000"]
+cvi_df = df.dropna(subset=cvi_fields)[["Country"] + cvi_fields].copy()
+
+inv = cvi_df[cvi_fields].copy()
+inv["DTP"] = 100 - inv["DTP"]
+inv["GDP"] = inv["GDP"].max() - inv["GDP"]
+inv["LifeExpectancy"] = inv["LifeExpectancy"].max() - inv["LifeExpectancy"]
+
+scaler = MinMaxScaler((0, 100))
+normalized = scaler.fit_transform(inv)
+
+cvi_df["CVI"] = normalized.mean(axis=1)
+
+# 6. Bottom 10 countries by CVI
+bottom_countries = (
+    cvi_df.groupby("Country")["CVI"]
+    .mean()
+    .sort_values(ascending=False)
+    .head(10)
+    .index.tolist()
+)
+
+# 7. Filter latest year for these countries
+latest_year = df["Year"].max()
+latest_df = df[(df["Year"] == latest_year) & (df["Country"].isin(bottom_countries))]
+
+# 8. Fit Linear Regression Model on GDP vs DTP
+train_df = df.dropna(subset=["GDP", "DTP"])
+model = LinearRegression()
+model.fit(train_df[["GDP"]], train_df["DTP"])
+
+# 9. Simulate 12% GDP increase
+latest_df["GDP_Increased"] = latest_df["GDP"] * 1.12
+
+# 10. ⚡ Drop NaN before Predicting
+latest_df = latest_df.dropna(subset=["GDP_Increased"])
+
+# 11. Predict Simulated DTP
+gdp_for_prediction = latest_df[["GDP_Increased"]].rename(columns={"GDP_Increased": "GDP"})
+latest_df["Simulated_DTP"] = model.predict(gdp_for_prediction)
+
+# 12. Prepare data for Altair
+plot_df = latest_df[["Country", "DTP", "Simulated_DTP"]].copy()
+plot_df = plot_df.melt(id_vars="Country", var_name="Type", value_name="Coverage")
+
+# 13. Horizontal Stacked Bar Chart
+country_order = latest_df.sort_values("DTP")["Country"].tolist()
+
+chart = (
+    alt.Chart(plot_df)
+    .mark_bar()
+    .encode(
+        y=alt.Y("Country:N", sort=country_order, title="Country"),
+        x=alt.X("Coverage:Q", stack="zero", title="DTP Coverage (%)"),
+        color=alt.Color(
+            "Type:N",
+            scale=alt.Scale(domain=["DTP", "Simulated_DTP"], range=["#e1a8c1", "#66bb6a"]),
+            legend=alt.Legend(title="Coverage Type")
+        ),
+        tooltip=["Country", "Type", "Coverage"]
+    )
+    .properties(
+        title={
+            "text": "Simulated DTP Coverage Based on GDP (Policy Simulator)",
+            "subtitle": "Actual vs Simulated DTP Coverage for Bottom 10 Vulnerable Countries",
+            "fontSize": 18,
+            "subtitleFontSize": 14
+        },
+        width=350,
+        height=250
+    )
+)
+
+chart
+
+```
+
+<p style="font-weight: bold; font-size: 16px;">
+
+Insight: **Countries such as Somalia, Guinea, and Nigeria** demonstrate large potential gains in DTP coverage if GDP is increased moderately.\
+**Simulated scenarios empower evidence-driven investments** targeting the most vulnerable regions.
+
+</p>
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## World Map: DTP Vaccination Coverage (Rotating Globe)
+
+```{python}
+
+globe_data = merged_df[merged_df["Year"] == latest_year][["Country", "DTP"]]
+
+custom_colors = [
+    [0.0, "#fce4ec"], [0.2, "#f8bbd0"], [0.4, "#f48fb1"],
+    [0.6, "#ce93d8"], [0.8, "#ab47bc"], [1.0, "#6a1b9a"]
+]
+
+fig = go.Figure(
+    data=go.Choropleth(
+        locations=globe_data["Country"],
+        locationmode="country names",
+        z=globe_data["DTP"],
+        colorscale=custom_colors,
+        colorbar_title="DTP Coverage (%)",
+        hovertext=globe_data["Country"],
+        hoverinfo="text+z"
+    )
+)
+
+fig.update_geos(
+    projection_type="orthographic",
+    showcoastlines=True,
+    showland=True,
+    showocean=True,
+    coastlinecolor="gray",
+    landcolor="white",
+    oceancolor="lavender"
+)
+
+fig.update_layout(
+    title_text=f"DTP Vaccination Coverage (Rotating Globe) – {latest_year}",
+    height=700,
+    geo=dict(showframe=False)
+)
+
+fig.show()
+
+```
+
+<p style="font-weight: bold; font-size: 16px;">
+
+Insight: The globe highlights stark disparities: Western Europe and North America show high vaccination coverage, while parts of Sub-Saharan Africa and South Asia lag behind. These spatial gaps in access reflect systemic inequities that must be addressed to achieve SDG 3 (Health for All).
+
+</p>
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## SDG Alignment & Policy Implications
+
+### SDG 3: Good Health and Well-being
+
+```         
+ Investing in immunization helps build resilient health systems.
+```
+
+### SDG 10: Reduced Inequalities
+
+```         
+ Closing vaccination gaps supports vulnerable populations.
+```
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## Conclusion
+
+This analysis provides evidence of how economic and demographic conditions impact child vulnerability. Better policies rely on data-driven insights like these.
+
+<hr style="border: none; height: 2px; background-color: #ce93d8; margin-top: 30px; margin-bottom: 30px;">
+
+## References
+
+-   UNICEF Datasets. (2024). Child Vulnerability Indicators.\
+-   World Bank Open Data. (2024). Economic and Health Indicators by Country.\
+-   United Nations. (2023). Sustainable Development Goals (SDG) Framework.
+
+::: {align="center"}
+*Report prepared by Isha Tanwar \| Spring 2025 \| Dublin City University*
+:::
