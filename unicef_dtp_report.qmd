@@ -96,16 +96,31 @@ except NameError:
 
 #| label: viz1-scatter
 fig1 = px.scatter(
-    df.query("Year==@year").dropna(subset=["GDP","DTP"]),
-    x="GDP", y="DTP",
-    size="Population, total", color="Country",
+    df.query("Year==@year").dropna(subset=["GDP", "DTP"]),
+    x="GDP", 
+    y="DTP",
+    size="Population, total", 
+    color="Country",
     hover_name="Country",
-    log_x=True, size_max=60,
+    log_x=True, 
+    size_max=60,
     title=f"GDP per Capita vs DTP Coverage ({year})",
-    labels={"GDP":"GDP per Capita (USD)","DTP":"DTP Coverage (%)"}
+    labels={
+        "GDP": "GDP per Capita (USD)",
+        "DTP": "DTP Coverage (%)"
+    }
 )
-fig1.update_layout(autosize=True)
+
+fig1.update_layout(
+    autosize=True,
+    width=None,
+    height=None,
+    hovermode="closest",  # Better touch interactions on mobile
+    showlegend=False  # << LEGEND IS NOW REMOVED
+)
+
 fig1.show()
+
 
 ```
 
@@ -116,18 +131,37 @@ fig1.show()
 ```{python}
 
 #| label: viz2-bar
-top10 = df.query("Year==@year").nlargest(10,"OrphanCount").assign(
-    Orphans_M=lambda d: d["OrphanCount"]/1e6
+top10 = df.query("Year==@year").nlargest(10, "OrphanCount").assign(
+    Orphans_M=lambda d: d["OrphanCount"] / 1e6
 )
+
 fig2 = px.bar(
-    top10, x="Orphans_M", y="Country", orientation="h",
-    hover_data={"Orphans_M":":.1f"}, labels={"Orphans_M":"Orphans (M)"},
+    top10,
+    x="Orphans_M",
+    y="Country",
+    orientation="h",
+    hover_data={"Orphans_M": ":.1f"},
+    labels={"Orphans_M": "Orphans (Millions)"},
     title=f"Top 10 Countries by Orphanhood ({year})"
 )
+
 fig2.update_layout(
-    yaxis={'categoryorder':'total ascending'},
-    autosize=True
+    autosize=True,
+    width=None,
+    height=None,
+    hovermode="closest",
+    yaxis=dict(
+        categoryorder="total ascending"
+    ),
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.3,
+        xanchor="center",
+        x=0.5
+    )
 )
+
 fig2.show()
 
 ```
@@ -139,15 +173,35 @@ fig2.show()
 ```{python}
 
 #| label: viz3-line
-focus = ["Yemen","Somalia","Guinea","Ukraine","Nigeria","Ethiopia"]
-ts = df.query("Country in @focus and Year<=@year").dropna(subset=["OrphanRate_per_1000"])
+focus = ["Yemen", "Somalia", "Guinea", "Ukraine", "Nigeria", "Ethiopia"]
+
+ts = df.query("Country in @focus and Year <= @year").dropna(subset=["OrphanRate_per_1000"])
+
 fig3 = px.line(
-    ts, x="Year", y="OrphanRate_per_1000", color="Country",
+    ts,
+    x="Year",
+    y="OrphanRate_per_1000",
+    color="Country",
     markers=True,
-    title=f"Orphan Rate per 1 000 Children (2010–{year})",
-    labels={"OrphanRate_per_1000":"Orphans per 1 000"}
+    title=f"Orphan Rate per 1,000 Children (2010–{year})",
+    labels={"OrphanRate_per_1000": "Orphans per 1,000"}
 )
-fig3.update_layout(legend_title_text="Country", autosize=True)
+
+fig3.update_layout(
+    autosize=True,
+    width=None,
+    height=None,
+    hovermode="x unified",  # Better timeline hover experience
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.3,
+        xanchor="center",
+        x=0.5
+    ),
+    legend_title_text="Country"
+)
+
 fig3.show()
 
 ```
@@ -160,15 +214,31 @@ fig3.show()
 
 #| label: viz4-facet
 fig4 = px.line(
-    ts, x="Year", y="OrphanRate_per_1000",
-    facet_col="Country", facet_col_wrap=3,
+    ts,
+    x="Year",
+    y="OrphanRate_per_1000",
+    facet_col="Country",
+    facet_col_wrap=3,
     title="Faceted Orphanhood Trends",
-    labels={"OrphanRate_per_1000":"Orphans per 1 000"}
+    labels={"OrphanRate_per_1000": "Orphans per 1,000"}
 )
+
 fig4.update_traces(mode="lines+markers")
-fig4.update_layout(autosize=True, showlegend=False)
+
+fig4.update_layout(
+    autosize=True,
+    width=None,
+    height=None,
+    showlegend=False,
+    hovermode="x unified",  # Better hover experience across facets
+    margin=dict(t=50, l=30, r=30, b=30)  # Tighter margins for mobile
+)
+
+# Clean facet titles (remove "Country=")
 fig4.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+
 fig4.show()
+
 ```
 
 ### Insight: Facets let you compare individual country trajectories and spot divergent patterns at a glance.
@@ -179,17 +249,33 @@ fig4.show()
 
 #| label: viz5-map
 fig5 = px.choropleth(
-    df.dropna(subset=["DTP"]), locations="Country",
-    locationmode="country names", color="DTP",
-    animation_frame="Year", range_color=[0,100],
+    df.dropna(subset=["DTP"]),
+    locations="Country",
+    locationmode="country names",
+    color="DTP",
+    animation_frame="Year",
+    range_color=[0, 100],
     color_continuous_scale="Viridis",
     title="Global DTP Coverage (2010–2024)"
 )
+
 fig5.update_layout(
-    geo=dict(projection_type="natural earth"),
-    autosize=True
+    autosize=True,
+    width=None,
+    height=None,
+    hovermode="closest",  # Best for touch on mobile
+    geo=dict(
+        projection_type="natural earth",
+        showframe=False,
+        showcoastlines=True,
+        landcolor="lightgray",
+        oceancolor="lightblue"
+    ),
+    margin=dict(t=50, l=30, r=30, b=30)  # Tighter margins for mobile
 )
+
 fig5.show()
+
 ```
 
 ### Insight: The slider reveals how high-income regions sustain > 95 % coverage, while many low-income areas lag below 60 %.
@@ -199,30 +285,51 @@ fig5.show()
 ```{python}
 
 #| label: viz6-cvi
-valid = df.dropna(subset=["GDP","DTP","LifeExpectancy","OrphanRate_per_1000"])
-valid = valid[valid["Year"]<=year]
+valid = df.dropna(subset=["GDP", "DTP", "LifeExpectancy", "OrphanRate_per_1000"])
+valid = valid[valid["Year"] <= year]
+
 inv = pd.DataFrame({
-    "DTP":100-valid["DTP"],
-    "GDP":valid["GDP"].max()-valid["GDP"],
-    "LE":valid["LifeExpectancy"].max()-valid["LifeExpectancy"],
-    "OR":valid["OrphanRate_per_1000"]
+    "DTP": 100 - valid["DTP"],
+    "GDP": valid["GDP"].max() - valid["GDP"],
+    "LE": valid["LifeExpectancy"].max() - valid["LifeExpectancy"],
+    "OR": valid["OrphanRate_per_1000"]
 })
-valid["CVI"] = MinMaxScaler((0,100)).fit_transform(inv).mean(axis=1)
-c = valid.query("Year==@year").nlargest(10,"CVI")
+
+valid["CVI"] = MinMaxScaler((0, 100)).fit_transform(inv).mean(axis=1)
+
+c = valid.query("Year==@year").nlargest(10, "CVI")
 avg = valid.query("Year==@year")["CVI"].mean()
 
 fig6 = px.bar(
-    c, x="CVI", y="Country", orientation="h",
-    hover_data={"CVI":":.1f"},
+    c,
+    x="CVI",
+    y="Country",
+    orientation="h",
+    hover_data={"CVI": ":.1f"},
     title=f"Child Vulnerability Index Top 10 ({year})",
-    labels={"CVI":"CVI (0–100)"}
+    labels={"CVI": "CVI (0–100)"}
 )
-fig6.add_vline(x=avg, line_dash="dash", annotation_text="Average", annotation_position="top right")
+
+fig6.add_vline(
+    x=avg,
+    line_dash="dash",
+    annotation_text="Average",
+    annotation_position="top right"
+)
+
 fig6.update_layout(
-    yaxis={'categoryorder':'total ascending'},
-    autosize=True
+    autosize=True,
+    width=None,
+    height=None,
+    hovermode="closest",
+    yaxis=dict(
+        categoryorder="total ascending"
+    ),
+    margin=dict(t=50, l=30, r=30, b=30)
 )
+
 fig6.show()
+
 ```
 
 ### Insight: Highest CVI countries (Somalia, Angola, Nigeria) need integrated economic, health, and protection programs.
@@ -235,7 +342,7 @@ fig6.show()
 from sklearn.linear_model import LinearRegression
 
 # 1) Train on GDP → DTP up to selected year
-train = df.query("Year <= @year").dropna(subset=["GDP","DTP"])
+train = df.query("Year <= @year").dropna(subset=["GDP", "DTP"])
 model = LinearRegression().fit(train[["GDP"]], train["DTP"])
 
 # 2) Take your top-CVI DataFrame `c` (from chunk viz6-cvi)
@@ -243,13 +350,13 @@ sim = c.copy()
 sim["GDP2"] = sim["GDP"] * 1.12
 
 # 3) Prepare X for prediction: must have column name "GDP"
-X_pred = sim[["GDP2"]].rename(columns={"GDP2":"GDP"})
+X_pred = sim[["GDP2"]].rename(columns={"GDP2": "GDP"})
 sim["DTP2"] = model.predict(X_pred)
 
 # 4) Melt for plotting
 sim_melt = sim.melt(
     id_vars="Country",
-    value_vars=["DTP","DTP2"],
+    value_vars=["DTP", "DTP2"],
     var_name="Scenario",
     value_name="Coverage"
 )
@@ -258,16 +365,32 @@ sim_melt = sim.melt(
 import plotly.express as px
 fig7 = px.bar(
     sim_melt,
-    x="Coverage", y="Country",
+    x="Coverage",
+    y="Country",
     color="Scenario",
     orientation="h",
-    title=f"Simulated DTP Coverage with +12 % GDP ({year})",
-    labels={"Coverage":"Coverage %","Scenario":"Scenario"}
+    title=f"Simulated DTP Coverage with +12% GDP ({year})",
+    labels={"Coverage": "DTP Coverage (%)", "Scenario": "Scenario"}
 )
+
 fig7.update_layout(
-    yaxis={'categoryorder':'total ascending'},
-    autosize=True
+    autosize=True,
+    width=None,
+    height=None,
+    hovermode="closest",
+    yaxis=dict(
+        categoryorder="total ascending"
+    ),
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.3,
+        xanchor="center",
+        x=0.5
+    ),
+    margin=dict(t=50, l=30, r=30, b=30)
 )
+
 fig7.show()
 
 ```
