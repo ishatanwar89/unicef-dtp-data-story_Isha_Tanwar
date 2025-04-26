@@ -1,4 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────────────── */
+<<<<<<< HEAD
 /* General layout */
 body {
   margin: auto;
@@ -7,6 +8,17 @@ body {
   font-size: 16px;
   line-height: 1.6;
   background-color: #f9f9f9;
+=======
+/* Base layout: full-width body + comfortable reading */
+body {
+  max-width: none !important;
+  margin: auto;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+>>>>>>> d79e927057efb09ea1a719ec8e6d006396633069
   color: #333;
   max-width: 100%;
   width: 100%;
@@ -55,20 +67,34 @@ a:hover {
   text-decoration: underline;
 }
 
+<<<<<<< HEAD
 /* Two-column layout: ToC + Main */
+=======
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Two-column grid: ToC sidebar + Main content */
+>>>>>>> d79e927057efb09ea1a719ec8e6d006396633069
 .page.toc-location-left .contents {
   display: grid;
   grid-template-columns: 220px 1fr;
   gap: 1rem;
 }
 
+<<<<<<< HEAD
 /* Table of contents sidebar */
 .page.toc-location-left .toc {
   width: 220px;
   max-width: 220px;
+=======
+/* TOC sidebar */
+.page.toc-location-left .toc {
+  width: 220px !important;
+  max-width: 220px !important;
+>>>>>>> d79e927057efb09ea1a719ec8e6d006396633069
   overflow-y: auto;
+  padding-right: 1rem;
 }
 
+<<<<<<< HEAD
 /* Main content */
 .page.toc-location-left .main {
   margin-left: 0;
@@ -77,6 +103,16 @@ a:hover {
 }
 
 /* Make graphs full width */
+=======
+/* Main body */
+.page.toc-location-left .main {
+  margin-left: 0 !important;
+  max-width: 100% !important;
+  padding-right: 1rem;
+}
+
+/* Plotly and Vega plots full width */
+>>>>>>> d79e927057efb09ea1a719ec8e6d006396633069
 .main .plotly-graph-div,
 .main .vega-embed {
   width: 100% !important;
@@ -84,6 +120,7 @@ a:hover {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
+<<<<<<< HEAD
 /* RESPONSIVE DESIGN for smaller screens */
 @media (max-width: 900px) {
   .page.toc-location-left .contents {
@@ -107,9 +144,54 @@ a:hover {
 }
 
 /* Extra breathing room on very large screens */
+=======
+/* Mobile adjustments */
+@media (max-width: 900px) {
+  .page.toc-location-left .contents {
+    grid-template-columns: 1fr; /* Full width content */
+  }
+  .page.toc-location-left .toc {
+    display: none !important; /* Hide sidebar on mobile */
+  }
+  body {
+    padding: 1rem; /* Slightly tighter padding on small screens */
+    font-size: 15px; /* Slightly smaller font for mobile */
+  }
+}
+
+/* Very wide screens (desktop) */
+>>>>>>> d79e927057efb09ea1a719ec8e6d006396633069
 @media (min-width: 1200px) {
   body {
     padding-left: 2rem;
     padding-right: 2rem;
   }
 }
+<<<<<<< HEAD
+=======
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* ToC typography and styling */
+.page.toc-location-left .toc h2,
+.page.toc-location-left .toc h3 {
+  margin: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.page.toc-location-left .toc ul {
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+}
+
+.page.toc-location-left .toc li {
+  margin: 0.25rem 0;
+  line-height: 1.4;
+}
+
+.page.toc-location-left .toc h2 {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+>>>>>>> d79e927057efb09ea1a719ec8e6d006396633069
