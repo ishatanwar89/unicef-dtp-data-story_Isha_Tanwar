@@ -1,13 +1,13 @@
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* Base layout: full-width body + comfortable line length */
+/* Base layout: full-width body + comfortable reading */
 body {
-  max-width: none !important;      /* removed the 900px cap */
-  margin: auto;                    /* center content horizontally */
-  padding: 1.5rem;                 /* breathing room */
-  line-height: 1.6;                /* readability */
+  max-width: none !important;
+  margin: auto;
+  padding: 1.5rem;
   background-color: #f9f9f9;
   font-family: 'Helvetica Neue', sans-serif;
   font-size: 16px;
+  line-height: 1.6;
   color: #333;
 }
 
@@ -55,34 +55,60 @@ a:hover {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* Two-column grid: 200px ToC sidebar + flexible main content */
+/* Two-column grid: ToC sidebar + Main content */
 .page.toc-location-left .contents {
   display: grid;
-  grid-template-columns: 200px 1fr !important;
-  gap: 0;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
 }
 
-/* Narrow, scrollable ToC */
+/* TOC sidebar */
 .page.toc-location-left .toc {
-  width: 200px !important;
-  max-width: 200px !important;
+  width: 220px !important;
+  max-width: 220px !important;
   overflow-y: auto;
+  padding-right: 1rem;
 }
 
-/* Main section takes full available width */
+/* Main body */
 .page.toc-location-left .main {
   margin-left: 0 !important;
   max-width: 100% !important;
-  padding-right: 1rem;  /* optional breathing room */
+  padding-right: 1rem;
 }
 
-/* Collapse ToC on small screens */
+/* Plotly and Vega plots full width */
+.main .plotly-graph-div,
+.main .vega-embed {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Mobile adjustments */
 @media (max-width: 900px) {
-  .page.toc-location-left .toc { display: none !important; }
-  .page.toc-location-left .contents { grid-template-columns: 1fr; }
+  .page.toc-location-left .contents {
+    grid-template-columns: 1fr; /* Full width content */
+  }
+  .page.toc-location-left .toc {
+    display: none !important; /* Hide sidebar on mobile */
+  }
+  body {
+    padding: 1rem; /* Slightly tighter padding on small screens */
+    font-size: 15px; /* Slightly smaller font for mobile */
+  }
 }
 
-/* ToC typography & spacing */
+/* Very wide screens (desktop) */
+@media (min-width: 1200px) {
+  body {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* ToC typography and styling */
 .page.toc-location-left .toc h2,
 .page.toc-location-left .toc h3 {
   margin: 0.5rem 1rem;
@@ -105,16 +131,3 @@ a:hover {
   padding-bottom: 0.5rem;
   margin-bottom: 0.75rem;
 }
-
-/* Make Plotly/Vega embeds fill their container */
-.main .plotly-graph-div,
-.main .vega-embed {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Extra padding on very wide screens */
-@media (min-width: 1200px) {
-  body { padding-left: 2rem; padding-right: 2rem; }
-}
-/* ─────────────────────────────────────────────────────────────────────────── */
