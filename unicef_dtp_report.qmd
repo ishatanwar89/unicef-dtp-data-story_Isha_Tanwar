@@ -10,6 +10,10 @@ format:
     backgroundcolor: "#f9f9f9"
     code-tools: true
     code-fold: true
+    fig-responsive: true
+    css: styles.css
+    html-metadata:
+      viewport: width=device-width, initial-scale=1
 bibliography: references.bib
 csl: harvard.csl
 params:
@@ -24,8 +28,8 @@ execute:
     warning: false
     message: false
     error: true
-css: styles.css
 ---
+
 
 <div style="text-align: center;">
 **Spring 2025 • BAA1030 Data Analytics & Storytelling (20074)**  
@@ -91,7 +95,7 @@ except NameError:
 + Policy Simulations suggest that a 12% increase in GDP could lead to a 4–8 percentage point rise in DTP coverage among vulnerable nations, offering a path to meaningful health outcomes if economic development efforts are coupled with health system strengthening.
 :::
 
-# 1. GDP vs DTP Coverage
+# 1. GDP vs DTP Coverage (Scatter)
 
 ```{python}
 
@@ -102,31 +106,31 @@ fig1 = px.scatter(
     y="DTP",
     size="Population, total", 
     color="Country",
+    color_discrete_sequence=["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#6a0dad"],
     hover_name="Country",
     log_x=True, 
     size_max=60,
     title=f"GDP per Capita vs DTP Coverage ({year})",
-    labels={
-        "GDP": "GDP per Capita (USD)",
-        "DTP": "DTP Coverage (%)"
-    }
+    labels={"GDP": "GDP per Capita (USD)", "DTP": "DTP Coverage (%)"}
 )
 
 fig1.update_layout(
+    title_font_color="#6a0dad",
+    font=dict(family="Helvetica Neue, sans-serif", color="#333"),
+    hovermode="closest",
     autosize=True,
     width=None,
     height=None,
-    hovermode="closest",  # Better touch interactions on mobile
-    showlegend=False  # << Completely hide the legend
+    showlegend=False
 )
-
 fig1.show()
+
 
 ```
 
 ### Insight: Wealth explains about 8 % of the variation in DTP coverage—economics matter but other factors are also critical.
 
-# 2. Top 10 Orphanhood Burden
+# 2. Top 10 Orphanhood Burden (Bar)
 
 ```{python}
 
@@ -142,33 +146,29 @@ fig2 = px.bar(
     orientation="h",
     hover_data={"Orphans_M": ":.1f"},
     labels={"Orphans_M": "Orphans (Millions)"},
-    title=f"Top 10 Countries by Orphanhood ({year})"
+    title=f"Top 10 Countries by Orphanhood ({year})",
+    color_discrete_sequence=["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#6a0dad"]
+
 )
 
 fig2.update_layout(
+    title_font_color="#6a0dad",
+    font=dict(family="Helvetica Neue, sans-serif", color="#333"),
+    hovermode="closest",
     autosize=True,
     width=None,
     height=None,
-    hovermode="closest",
-    yaxis=dict(
-        categoryorder="total ascending"
-    ),
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=-0.3,
-        xanchor="center",
-        x=0.5
-    )
+    yaxis=dict(categoryorder="total ascending"),
+    legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5)
 )
-
 fig2.show()
+
 
 ```
 
 ### Insight: Five countries (Nigeria, DR Congo, Pakistan, Indonesia, Ethiopia) account for over one-third of all orphans globally.
 
-# 3. Orphan Rate Trends (2010–year)
+# 3. Orphan Rate Trends (2010–year) (Line)
 
 ```{python}
 
@@ -183,32 +183,28 @@ fig3 = px.line(
     y="OrphanRate_per_1000",
     color="Country",
     markers=True,
+    color_discrete_sequence=["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#6a0dad"],
     title=f"Orphan Rate per 1,000 Children (2010–{year})",
     labels={"OrphanRate_per_1000": "Orphans per 1,000"}
 )
 
 fig3.update_layout(
+    title_font_color="#6a0dad",
+    font=dict(family="Helvetica Neue, sans-serif", color="#333"),
+    hovermode="x unified",
     autosize=True,
     width=None,
     height=None,
-    hovermode="x unified",  # Better timeline hover experience
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=-0.3,
-        xanchor="center",
-        x=0.5
-    ),
+    legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5),
     legend_title_text="Country"
 )
-
 fig3.show()
 
 ```
 
 ### Insight: Somalia reached ~61 orphans per 1 000 in 2012; Ukraine peaked at ~17 per 1 000 in 2021—highlighting crisis spikes.
 
-# 4. Faceted Orphanhood Trends
+# 4. Faceted Orphanhood Trends (Faceted Line)
 
 ```{python}
 
@@ -219,6 +215,7 @@ fig4 = px.line(
     y="OrphanRate_per_1000",
     facet_col="Country",
     facet_col_wrap=3,
+    color_discrete_sequence=["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#6a0dad"],
     title="Faceted Orphanhood Trends",
     labels={"OrphanRate_per_1000": "Orphans per 1,000"}
 )
@@ -226,24 +223,24 @@ fig4 = px.line(
 fig4.update_traces(mode="lines+markers")
 
 fig4.update_layout(
+    title_font_color="#6a0dad",
+    font=dict(family="Helvetica Neue, sans-serif", color="#333"),
     autosize=True,
     width=None,
     height=None,
     showlegend=False,
-    hovermode="x unified",  # Better hover experience across facets
-    margin=dict(t=50, l=30, r=30, b=30)  # Tighter margins for mobile
+    hovermode="x unified",
+    margin=dict(t=50, l=30, r=30, b=30)
 )
 
-# Clean facet titles (remove "Country=")
 fig4.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-
 fig4.show()
 
 ```
 
 ### Insight: Facets let you compare individual country trajectories and spot divergent patterns at a glance.
 
-# 5. Animated Global DTP Coverage Map
+# 5. Animated Global DTP Coverage Map (Choropleth)
 
 
 ```{python}
@@ -256,11 +253,18 @@ fig5 = px.choropleth(
     color="DTP",
     animation_frame="Year",
     range_color=[0, 100],
-    color_continuous_scale="Viridis"
+    color_continuous_scale=[
+  "#6a0dad",  # deep purple
+  "#d291bc",  # soft lavender pink
+  "#ffe6f0"   # very light pinkish white
+    ]
+
 )
 
 fig5.update_layout(
-    title="Global DTP Coverage (2010–2024)<br><br>",  # add two line breaks
+    title="Global DTP Coverage (2010–2024)<br><br>",
+    title_font_color="#6a0dad",
+    font=dict(family="Helvetica Neue, sans-serif", color="#333"),
     autosize=True,
     width=None,
     height=None,
@@ -274,18 +278,19 @@ fig5.update_layout(
     ),
     margin=dict(t=50, l=30, r=30, b=30)
 )
-
 fig5.show()
+
 
 ```
 
 ### Insight: The slider reveals how high-income regions sustain > 95 % coverage, while many low-income areas lag below 60 %.
 
-# 6. Composite Vulnerability Index (CVI)
+# 6. Composite Vulnerability Index (CVI) (Bar)
 
 ```{python}
 
 #| label: viz6-cvi
+# Step 1: Calculate CVI values
 valid = df.dropna(subset=["GDP", "DTP", "LifeExpectancy", "OrphanRate_per_1000"])
 valid = valid[valid["Year"] <= year]
 
@@ -298,9 +303,11 @@ inv = pd.DataFrame({
 
 valid["CVI"] = MinMaxScaler((0, 100)).fit_transform(inv).mean(axis=1)
 
+# Step 2: Prepare data for plotting
 c = valid.query("Year==@year").nlargest(10, "CVI")
 avg = valid.query("Year==@year")["CVI"].mean()
 
+# Step 3: Plot
 fig6 = px.bar(
     c,
     x="CVI",
@@ -308,7 +315,8 @@ fig6 = px.bar(
     orientation="h",
     hover_data={"CVI": ":.1f"},
     title=f"Child Vulnerability Index Top 10 ({year})",
-    labels={"CVI": "CVI (0–100)"}
+    labels={"CVI": "CVI (0–100)"},
+    color_discrete_sequence=["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#6a0dad"]
 )
 
 fig6.add_vline(
@@ -319,42 +327,46 @@ fig6.add_vline(
 )
 
 fig6.update_layout(
+    title_font_color="#6a0dad",
+    font=dict(
+        family="Helvetica Neue, sans-serif",
+        color="#333"
+    ),
     autosize=True,
     width=None,
     height=None,
     hovermode="closest",
-    yaxis=dict(
-        categoryorder="total ascending"
-    ),
+    yaxis=dict(categoryorder="total ascending"),
     margin=dict(t=50, l=30, r=30, b=30)
 )
 
 fig6.show()
 
+
 ```
 
 ### Insight: Highest CVI countries (Somalia, Angola, Nigeria) need integrated economic, health, and protection programs.
 
-# 7. Policy Simulator: + 12 % GDP → DTP
+# 7. Policy Simulator: (+ 12 % GDP → DTP) (Grouped Bar)
 
 ```{python}
 
 #| label: viz7-sim
 from sklearn.linear_model import LinearRegression
 
-# 1) Train on GDP → DTP up to selected year
+# 1) Train model on GDP → DTP up to selected year
 train = df.query("Year <= @year").dropna(subset=["GDP", "DTP"])
 model = LinearRegression().fit(train[["GDP"]], train["DTP"])
 
-# 2) Take your top-CVI DataFrame `c` (from chunk viz6-cvi)
+# 2) Take your top-CVI DataFrame `c` (already created earlier in viz6-cvi)
 sim = c.copy()
-sim["GDP2"] = sim["GDP"] * 1.12
+sim["GDP2"] = sim["GDP"] * 1.12  # simulate 12% increase in GDP
 
-# 3) Prepare X for prediction: must have column name "GDP"
+# 3) Prepare X for prediction
 X_pred = sim[["GDP2"]].rename(columns={"GDP2": "GDP"})
 sim["DTP2"] = model.predict(X_pred)
 
-# 4) Melt for plotting
+# 4) Melt data for grouped bar plot
 sim_melt = sim.melt(
     id_vars="Country",
     value_vars=["DTP", "DTP2"],
@@ -363,7 +375,6 @@ sim_melt = sim.melt(
 )
 
 # 5) Plot interactive bar
-import plotly.express as px
 fig7 = px.bar(
     sim_melt,
     x="Coverage",
@@ -371,17 +382,21 @@ fig7 = px.bar(
     color="Scenario",
     orientation="h",
     title=f"Simulated DTP Coverage with +12% GDP ({year})",
-    labels={"Coverage": "DTP Coverage (%)", "Scenario": "Scenario"}
+    labels={"Coverage": "DTP Coverage (%)", "Scenario": "Scenario"},
+    color_discrete_sequence=["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#6a0dad"]
 )
 
 fig7.update_layout(
+    title_font_color="#6a0dad",
+    font=dict(
+        family="Helvetica Neue, sans-serif",
+        color="#333"
+    ),
     autosize=True,
     width=None,
     height=None,
     hovermode="closest",
-    yaxis=dict(
-        categoryorder="total ascending"
-    ),
+    yaxis=dict(categoryorder="total ascending"),
     legend=dict(
         orientation="h",
         yanchor="bottom",
@@ -391,8 +406,6 @@ fig7.update_layout(
     ),
     margin=dict(t=50, l=30, r=30, b=30)
 )
-
-fig7.show()
 
 ```
 
