@@ -1,5 +1,5 @@
 ---
-title: "UNICEF Data Story: Global Child Vulnerability & DTP Vaccination"
+title: "UNICEF: Global Child Vulnerability & DTP Vaccination"
 format:
   html:
     embed-resources: true
@@ -296,8 +296,8 @@ fig7.show()
 
 # References
 
-UNICEF (2024) Child Vulnerability Indicators. Available at: https://data.unicef.org/ (Accessed: 15 April 2025).
+UNICEF (2024) Child Vulnerability Indicators.
 
-World Bank (2024) World Development Indicators. Available at: https://data.worldbank.org/ (Accessed: 15 April 2025).
+World Bank (2024) World Development Indicators.
 
-United Nations (2023) Sustainable Development Goals. Available at: https://sdgs.un.org/goals (Accessed: 15 April 2025).
+United Nations (2023) Sustainable Development Goals.
