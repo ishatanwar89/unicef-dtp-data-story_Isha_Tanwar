@@ -41,7 +41,10 @@ Thanks to Prof. Dr. Damien Dupré for his unwavering guidance and support.
 
 # Introduction
 
-This report uses UNICEF & World Bank data (2010–2024) to build a **Composite Vulnerability Index (CVI)** combining economic (GDP), health (DTP vaccination & life expectancy), and social (orphanhood) indicators. Fully interactive charts reveal disparities, trends, and policy levers for SDG 3 and SDG 10.
+This report leverages UNICEF and World Bank data (2010–2024) to construct a ***Composite Vulnerability Index (CVI)*** that synthesizes economic (GDP per capita), health (DTP vaccination coverage and life expectancy), and social (orphanhood rates) indicators.
+By analyzing these dimensions through fully interactive visualizations, the report aims to uncover hidden disparities, track global trends, and identify actionable policy levers. The analysis directly supports Sustainable Development Goals (SDGs) 3 (Good Health and Well-being) and 10 (Reduced Inequalities).
+Why it matters:
+Despite global progress, significant health and socio-economic gaps persist across countries. Understanding vulnerability at the intersection of economic, health, and social factors is critical for designing effective, targeted interventions to protect the most at-risk populations.
 
 ```{python}
 #| label: setup
@@ -71,11 +74,20 @@ except NameError:
 
 # Executive Summary
 
-+ $1 000 GDP → + 0.22 pp DTP (R²≈0.08).
-+ < 60 % DTP in Sub-Saharan Africa & South Asia.
-+ Top CVI (2022): Somalia 72.5, Angola 67.7, Nigeria 67.6.
-+ Orphans: Nigeria 13.9 M, DR Congo 5.8 M, Pakistan 5.8 M, Indonesia 5.7 M, Ethiopia 3.0 M.
-+ Sim: + 12 % GDP → + 4–8 pp DTP in vulnerable states. 
+## Key Findings:
+
++ Economic Growth and Vaccination: A $1,000 increase in GDP per capita correlates with a 0.22 percentage point rise in DTP vaccination coverage (R² ≈ 0.08), indicating a modest positive link between economic development and healthcare access.
++ Regional Disparities: DTP coverage rates remain critically low (< 60%) across Sub-Saharan Africa and South Asia, underscoring regional vulnerabilities.
++ Highest Vulnerability (2022): The countries with the highest Composite Vulnerability Index (CVI) scores are Somalia (72.5), Angola (67.7), and Nigeria (67.6), reflecting compounded economic, health, and social challenges.
+
+## Challenges:
+
++ Orphanhood Burden: High orphan populations in countries like Nigeria (13.9 million), DR Congo (5.8 million), Pakistan (5.8 million), Indonesia (5.7 million), and Ethiopia (3.0 million) exacerbate social vulnerability and strain on public health systems.
++ Limited Health Gains: Economic gains alone are insufficient to drive significant improvements in DTP coverage, suggesting the need for targeted health interventions alongside economic growth.
+
+## Opportunities:
+
++ Policy Simulations suggest that a 12% increase in GDP could lead to a 4–8 percentage point rise in DTP coverage among vulnerable nations, offering a path to meaningful health outcomes if economic development efforts are coupled with health system strengthening.
 :::
 
 # 1. GDP vs DTP Coverage
