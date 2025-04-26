@@ -1,0 +1,291 @@
+---
+title: "UNICEF Data Story: Global Child Vulnerability & DTP Vaccination"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    toc-depth: 2
+    theme: cosmo
+    backgroundcolor: "#f9f9f9"
+    code-tools: true
+    code-fold: true
+bibliography: references.bib
+csl: harvard.csl
+params:
+  year:
+    value: 2022
+    input: select
+    options: [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+execute:
+  python:
+    engine: .venv/bin/python
+    echo: false
+    warning: false
+    message: false
+    error: true
+css: styles.css
+---
+
+<div style="text-align: center;">
+**Spring 2025 • BAA1030 Data Analytics & Storytelling (20074)**  
+**Student**: Isha Tanwar (ID 48614)  
+**Programme**: MSc in Management (Strategy)
+</div>
+
+::: callout-note
+
+**Acknowledgement**  
+Thanks to Prof. Dr. Damien Dupré for his unwavering guidance and support.
+:::
+
+# Introduction
+
+This report uses UNICEF & World Bank data (2010–2024) to build a **Composite Vulnerability Index (CVI)** combining economic (GDP), health (DTP vaccination & life expectancy), and social (orphanhood) indicators. Fully interactive charts reveal disparities, trends, and policy levers for SDG 3 and SDG 10.
+
+```{python}
+#| label: setup
+import pandas as pd
+import plotly.express as px
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
+
+# 1) Load & preprocess data
+df = pd.read_csv("merged_final.csv")
+df["OrphanRate_per_1000"] = (
+    df["OrphanCount"] / df["Population, total"]
+) * 1000
+df = df.rename(columns={
+    "GDP per capita (constant 2015 US$)": "GDP",
+    "Life expectancy at birth, total (years)": "LifeExpectancy"
+})
+
+# 2) Set year parameter (Quarto injects params; Jupyter fallback)
+try:
+    year = params.year
+except NameError:
+    year = 2022   # ← use any test year here when running interactively
+```
+
+::: callout-tip
+
+# Executive Summary
+
++ $1 000 GDP → + 0.22 pp DTP (R²≈0.08).
++ < 60 % DTP in Sub-Saharan Africa & South Asia.
++ Top CVI (2022): Somalia 72.5, Angola 67.7, Nigeria 67.6.
++ Orphans: Nigeria 13.9 M, DR Congo 5.8 M, Pakistan 5.8 M, Indonesia 5.7 M, Ethiopia 3.0 M.
++ Sim: + 12 % GDP → + 4–8 pp DTP in vulnerable states. 
+:::
+
+# 1. GDP vs DTP Coverage
+
+```{python}
+
+#| label: viz1-scatter
+fig1 = px.scatter(
+    df.query("Year==@year").dropna(subset=["GDP","DTP"]),
+    x="GDP", y="DTP",
+    size="Population, total", color="Country",
+    hover_name="Country",
+    log_x=True, size_max=60,
+    title=f"GDP per Capita vs DTP Coverage ({year})",
+    labels={"GDP":"GDP per Capita (USD)","DTP":"DTP Coverage (%)"}
+)
+fig1.update_layout(margin=dict(l=40,r=0,t=50,b=30))
+fig1.show()
+
+```
+
+### Insight: Wealth explains about 8 % of the variation in DTP coverage—economics matter but other factors are also critical.
+
+# 2. Top 10 Orphanhood Burden
+
+```{python}
+
+#| label: viz2-bar
+top10 = df.query("Year==@year").nlargest(10,"OrphanCount").assign(
+    Orphans_M=lambda d: d["OrphanCount"]/1e6
+)
+fig2 = px.bar(
+    top10, x="Orphans_M", y="Country", orientation="h",
+    hover_data={"Orphans_M":":.1f"}, labels={"Orphans_M":"Orphans (M)"},
+    title=f"Top 10 Countries by Orphanhood ({year})"
+)
+fig2.update_layout(
+    yaxis={'categoryorder':'total ascending'},
+    margin=dict(l=100,r=0,t=50,b=30)
+)
+fig2.show()
+
+```
+
+### Insight: Five countries (Nigeria, DR Congo, Pakistan, Indonesia, Ethiopia) account for over one-third of all orphans globally.
+
+# 3. Orphan Rate Trends (2010–year)
+
+```{python}
+
+#| label: viz3-line
+focus = ["Yemen","Somalia","Guinea","Ukraine","Nigeria","Ethiopia"]
+ts = df.query("Country in @focus and Year<=@year").dropna(subset=["OrphanRate_per_1000"])
+fig3 = px.line(
+    ts, x="Year", y="OrphanRate_per_1000", color="Country",
+    markers=True,
+    title=f"Orphan Rate per 1 000 Children (2010–{year})",
+    labels={"OrphanRate_per_1000":"Orphans per 1 000"}
+)
+fig3.update_layout(legend_title_text="Country", margin=dict(l=40,r=0,t=50,b=30))
+fig3.show()
+
+```
+
+### Insight: Somalia reached ~61 orphans per 1 000 in 2012; Ukraine peaked at ~17 per 1 000 in 2021—highlighting crisis spikes.
+
+# 4. Faceted Orphanhood Trends
+
+```{python}
+
+#| label: viz4-facet
+fig4 = px.line(
+    ts, x="Year", y="OrphanRate_per_1000",
+    facet_col="Country", facet_col_wrap=3,
+    title="Faceted Orphanhood Trends",
+    labels={"OrphanRate_per_1000":"Orphans per 1 000"}
+)
+fig4.update_traces(mode="lines+markers")
+fig4.update_layout(margin=dict(l=20,r=20,t=50,b=20), showlegend=False)
+fig4.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+fig4.show()
+```
+
+### Insight: Facets let you compare individual country trajectories and spot divergent patterns at a glance.
+
+# 5. Animated Global DTP Coverage Map
+
+```{python}
+
+#| label: viz5-map
+fig5 = px.choropleth(
+    df.dropna(subset=["DTP"]), locations="Country",
+    locationmode="country names", color="DTP",
+    animation_frame="Year", range_color=[0,100],
+    color_continuous_scale="Viridis",
+    title="Global DTP Coverage (2010–2024)"
+)
+fig5.update_layout(
+    geo=dict(projection_type="natural earth"),
+    margin=dict(l=0,r=0,t=50,b=0)
+)
+fig5.show()
+```
+
+### Insight: The slider reveals how high-income regions sustain > 95 % coverage, while many low-income areas lag below 60 %.
+
+# 6. Composite Vulnerability Index (CVI)
+
+```{python}
+
+#| label: viz6-cvi
+valid = df.dropna(subset=["GDP","DTP","LifeExpectancy","OrphanRate_per_1000"])
+valid = valid[valid["Year"]<=year]
+inv = pd.DataFrame({
+    "DTP":100-valid["DTP"],
+    "GDP":valid["GDP"].max()-valid["GDP"],
+    "LE":valid["LifeExpectancy"].max()-valid["LifeExpectancy"],
+    "OR":valid["OrphanRate_per_1000"]
+})
+valid["CVI"] = MinMaxScaler((0,100)).fit_transform(inv).mean(axis=1)
+c = valid.query("Year==@year").nlargest(10,"CVI")
+avg = valid.query("Year==@year")["CVI"].mean()
+
+fig6 = px.bar(
+    c, x="CVI", y="Country", orientation="h",
+    hover_data={"CVI":":.1f"},
+    title=f"Child Vulnerability Index Top 10 ({year})",
+    labels={"CVI":"CVI (0–100)"}
+)
+fig6.add_vline(x=avg, line_dash="dash", annotation_text="Average", annotation_position="top right")
+fig6.update_layout(
+    yaxis={'categoryorder':'total ascending'},
+    margin=dict(l=100,r=0,t=50,b=30)
+)
+fig6.show()
+```
+
+### Insight: Highest CVI countries (Somalia, Angola, Nigeria) need integrated economic, health, and protection programs.
+
+# 7. Policy Simulator: + 12 % GDP → DTP
+
+```{python}
+
+#| label: viz7-sim
+from sklearn.linear_model import LinearRegression
+
+# 1) Train on GDP → DTP up to selected year
+train = df.query("Year <= @year").dropna(subset=["GDP","DTP"])
+model = LinearRegression().fit(train[["GDP"]], train["DTP"])
+
+# 2) Take your top-CVI DataFrame `c` (from chunk viz6-cvi)
+sim = c.copy()
+sim["GDP2"] = sim["GDP"] * 1.12
+
+# 3) Prepare X for prediction: must have column name "GDP"
+X_pred = sim[["GDP2"]].rename(columns={"GDP2":"GDP"})
+sim["DTP2"] = model.predict(X_pred)
+
+# 4) Melt for plotting
+sim_melt = sim.melt(
+    id_vars="Country",
+    value_vars=["DTP","DTP2"],
+    var_name="Scenario",
+    value_name="Coverage"
+)
+
+# 5) Plot interactive bar
+import plotly.express as px
+fig7 = px.bar(
+    sim_melt,
+    x="Coverage", y="Country",
+    color="Scenario",
+    orientation="h",
+    title=f"Simulated DTP Coverage with +12 % GDP ({year})",
+    labels={"Coverage":"Coverage %","Scenario":"Scenario"}
+)
+fig7.update_layout(
+    yaxis={'categoryorder':'total ascending'},
+    margin=dict(l=100,r=0,t=50,b=30)
+)
+fig7.show()
+
+```
+
+### Insight: A modest GDP increase could boost immunisation by 4–8 percentage points in the most vulnerable countries—powerful evidence for targeted economic support.
+
+# SDG Alignment & Recommendations
+
+## SDG 3: Good Health & Wellbeing 
+
+    Invest in mobile clinics & outreach.
+
+## SDG 10: Reduced Inequalities
+
+    Direct fiscal transfers to high-CVI nations.
+
+::: callout-note
+
+**Next Steps Checklist**
+
+- [ ] Increase immunisation budgets by 10 % in top-CVI countries  
+- [ ] Deploy community health workers in underserved regions  
+- [ ] Implement real-time orphanhood monitoring systems
+
+:::
+
+# References
+
+UNICEF (2024) Child Vulnerability Indicators. Available at: https://data.unicef.org/ (Accessed: 15 April 2025).
+
+World Bank (2024) World Development Indicators. Available at: https://data.worldbank.org/ (Accessed: 15 April 2025).
+
+United Nations (2023) Sustainable Development Goals. Available at: https://sdgs.un.org/goals (Accessed: 15 April 2025).
