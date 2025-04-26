@@ -1,19 +1,21 @@
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* Base layout: full-width body + comfortable line length */
+/* General layout */
 body {
-  max-width: none !important;      /* removed the 900px cap */
-  margin: auto;                    /* center content horizontally */
-  padding: 1.5rem;                 /* breathing room */
-  line-height: 1.6;                /* readability */
-  background-color: #f9f9f9;
+  margin: auto;
+  padding: 1rem;
   font-family: 'Helvetica Neue', sans-serif;
   font-size: 16px;
+  line-height: 1.6;
+  background-color: #f9f9f9;
   color: #333;
+  max-width: 100%;
+  width: 100%;
 }
 
 /* Headings */
 h1, h2, h3, h4 {
-  margin: 2rem 0 1rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
   font-weight: bold;
   color: #2c3e50;
 }
@@ -21,12 +23,6 @@ h1, h2, h3, h4 {
 /* Paragraphs */
 p {
   margin-bottom: 1rem;
-}
-
-/* Code blocks */
-pre.sourceCode,
-div.sourceCode {
-  margin: 1.5rem 0;
 }
 
 /* Inline code */
@@ -37,12 +33,17 @@ code {
   font-size: 14px;
 }
 
+/* Code blocks */
+pre.sourceCode, div.sourceCode {
+  margin: 1.5rem 0;
+}
+
 /* Emphasis */
 strong { font-weight: 700; }
 em     { font-style: italic; }
 u      { text-decoration: underline; }
 
-/* Horizontal rule */
+/* Horizontal line */
 hr {
   border-top: 1px solid #ddd;
   margin: 2em 0;
@@ -54,67 +55,61 @@ a:hover {
   text-decoration: underline;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Two-column grid: 200px ToC sidebar + flexible main content */
+/* Two-column layout: ToC + Main */
 .page.toc-location-left .contents {
   display: grid;
-  grid-template-columns: 200px 1fr !important;
-  gap: 0;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
 }
 
-/* Narrow, scrollable ToC */
+/* Table of contents sidebar */
 .page.toc-location-left .toc {
-  width: 200px !important;
-  max-width: 200px !important;
+  width: 220px;
+  max-width: 220px;
   overflow-y: auto;
 }
 
-/* Main section takes full available width */
+/* Main content */
 .page.toc-location-left .main {
-  margin-left: 0 !important;
-  max-width: 100% !important;
-  padding-right: 1rem;  /* optional breathing room */
+  margin-left: 0;
+  max-width: 100%;
+  padding-right: 1rem;
 }
 
-/* Collapse ToC on small screens */
-@media (max-width: 900px) {
-  .page.toc-location-left .toc { display: none !important; }
-  .page.toc-location-left .contents { grid-template-columns: 1fr; }
-}
-
-/* ToC typography & spacing */
-.page.toc-location-left .toc h2,
-.page.toc-location-left .toc h3 {
-  margin: 0.5rem 1rem;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.page.toc-location-left .toc ul {
-  padding-left: 1rem;
-  margin: 0.5rem 0;
-}
-
-.page.toc-location-left .toc li {
-  margin: 0.25rem 0;
-  line-height: 1.4;
-}
-
-.page.toc-location-left .toc h2 {
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-/* Make Plotly/Vega embeds fill their container */
+/* Make graphs full width */
 .main .plotly-graph-div,
 .main .vega-embed {
   width: 100% !important;
   max-width: 100% !important;
 }
 
-/* Extra padding on very wide screens */
-@media (min-width: 1200px) {
-  body { padding-left: 2rem; padding-right: 2rem; }
-}
 /* ─────────────────────────────────────────────────────────────────────────── */
+/* RESPONSIVE DESIGN for smaller screens */
+@media (max-width: 900px) {
+  .page.toc-location-left .contents {
+    grid-template-columns: 1fr;
+  }
+  .page.toc-location-left .toc {
+    display: none !important;
+  }
+  body {
+    padding: 1rem;
+    font-size: 15px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .page.toc-location-left .main {
+    padding: 0 1rem;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Extra breathing room on very large screens */
+@media (min-width: 1200px) {
+  body {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
